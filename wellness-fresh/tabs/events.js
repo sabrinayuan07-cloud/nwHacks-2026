@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, SafeAreaView, Image, Modal, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import BottomNav from './bottomNav';
 
 // Expanded event data with more events
@@ -11,6 +12,7 @@ const allEventsData = [
         day: 'Wednesday',
         time: '6pm',
         type: 'in-person',
+        facilitatorType: 'human', // 'human', 'ai', or 'hybrid'
         image: require('../assets/images/EventsCraft.png'),
         color: ['#D1C5FD', '#CABDFD'],
         tags: ['creative', 'social', 'art'],
@@ -37,6 +39,7 @@ const allEventsData = [
         day: 'Thursday',
         time: '5pm',
         type: 'in-person',
+        facilitatorType: 'human',
         image: require('../assets/images/EventsCooking.png'),
         color: ['#BFDBFE', '#DBEAFE'],
         tags: ['food', 'mindfulness', 'cooking'],
@@ -63,6 +66,7 @@ const allEventsData = [
         day: 'Friday',
         time: '10pm',
         type: 'online',
+        facilitatorType: 'hybrid', // Example of hybrid event
         image: require('../assets/images/EventsStargaze.png'),
         color: ['#D1C5FD', '#CABDFD'],
         tags: ['support', 'online', 'night'],
@@ -89,6 +93,7 @@ const allEventsData = [
         day: 'Monday',
         time: '2pm',
         type: 'in-person',
+        facilitatorType: 'human',
         image: require('../assets/images/EventsCraft.png'),
         color: ['#FED7AA', '#FDBA74'],
         tags: ['academic', 'study', 'productivity'],
@@ -116,6 +121,7 @@ const allEventsData = [
         day: 'Tuesday',
         time: '8am',
         type: 'in-person',
+        facilitatorType: 'ai', // Example of AI-facilitated event
         image: require('../assets/images/EventsStargaze.png'),
         color: ['#A7F3D0', '#6EE7B7'],
         tags: ['wellness', 'mindfulness', 'meditation'],
@@ -143,6 +149,7 @@ const allEventsData = [
         day: 'Wednesday',
         time: '4pm',
         type: 'in-person',
+        facilitatorType: 'human',
         image: require('../assets/images/EventsCraft.png'),
         color: ['#C4B5FD', '#A78BFA'],
         tags: ['creative', 'writing', 'art'],
@@ -170,6 +177,7 @@ const allEventsData = [
         day: 'Friday',
         time: '7pm',
         type: 'in-person',
+        facilitatorType: 'human',
         image: require('../assets/images/EventsCooking.png'),
         color: ['#FDE68A', '#FCD34D'],
         tags: ['social', 'games', 'fun'],
@@ -197,6 +205,7 @@ const allEventsData = [
         day: 'Thursday',
         time: '12pm',
         type: 'in-person',
+        facilitatorType: 'human',
         image: require('../assets/images/EventsStargaze.png'),
         color: ['#FBCFE8', '#F9A8D4'],
         tags: ['wellness', 'fitness', 'yoga'],
@@ -223,11 +232,27 @@ const allEventsData = [
 export function EventsListPage({ onNavigate }) {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showFilterModal, setShowFilterModal] = useState(false);
     const [joinedEventName, setJoinedEventName] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [filterType, setFilterType] = useState('all'); // 'all', 'in-person', 'online'
+    const [activeFilters, setActiveFilters] = useState([]); // Array of active filters
     const [joinedEvents, setJoinedEvents] = useState([]); // Track joined events
     const searchInputRef = useRef(null);
+
+    // Toggle filter on/off
+    const toggleFilter = (filterValue) => {
+        if (filterValue === 'all') {
+            setActiveFilters([]);
+        } else {
+            setActiveFilters(prev => {
+                if (prev.includes(filterValue)) {
+                    return prev.filter(f => f !== filterValue);
+                } else {
+                    return [...prev, filterValue];
+                }
+            });
+        }
+    };
 
     // Filter events based on search and type (including description and whoShouldCome)
     const filteredEvents = allEventsData.filter(event => {
@@ -240,7 +265,21 @@ export function EventsListPage({ onNavigate }) {
             event.day.toLowerCase().includes(searchLower) ||
             event.tags.some(tag => tag.toLowerCase().includes(searchLower));
 
-        const matchesFilter = filterType === 'all' || event.type === filterType;
+        // If no filters active, show all events
+        if (activeFilters.length === 0) {
+            return matchesSearch;
+        }
+
+        // Check if event matches any active filter
+        const matchesFilter = activeFilters.some(filter => {
+            if (filter === 'in-person' || filter === 'online') {
+                return event.type === filter;
+            } else if (filter === 'ai' || filter === 'human' || filter === 'hybrid') {
+                const facilitatorType = event.facilitatorType || 'human';
+                return facilitatorType === filter;
+            }
+            return false;
+        });
 
         return matchesSearch && matchesFilter;
     });
@@ -311,31 +350,39 @@ export function EventsListPage({ onNavigate }) {
                     </View>
                 </View>
 
-                {/* Filter buttons */}
+                {/* Filter button */}
                 <View style={styles.filterContainer}>
                     <TouchableOpacity
-                        style={[styles.filterButton, filterType === 'all' && styles.filterButtonActive]}
-                        onPress={() => setFilterType('all')}
+                        style={[styles.filterButtonMain, activeFilters.length > 0 && styles.filterButtonMainActive]}
+                        onPress={() => setShowFilterModal(true)}
                     >
-                        <Text style={[styles.filterText, filterType === 'all' && styles.filterTextActive]}>
-                            All
+                        <Ionicons 
+                            name="filter" 
+                            size={18} 
+                            color={activeFilters.length > 0 ? '#FFFFFF' : '#7C3AED'} 
+                            style={{ marginRight: 6 }}
+                        />
+                        <Text style={[styles.filterButtonMainText, activeFilters.length > 0 && styles.filterButtonMainTextActive]}>
+                            {activeFilters.length === 0 ? 'Filter' : 
+                             activeFilters.length === 1 ? 
+                                (activeFilters[0] === 'in-person' ? 'In-Person' :
+                                 activeFilters[0] === 'online' ? 'Online' :
+                                 activeFilters[0] === 'ai' ? 'AI Only' :
+                                 activeFilters[0] === 'human' ? 'Human Only' :
+                                 activeFilters[0] === 'hybrid' ? 'Hybrid' : 'Filter') :
+                             `Filter (${activeFilters.length})`}
                         </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.filterButton, filterType === 'in-person' && styles.filterButtonActive]}
-                        onPress={() => setFilterType('in-person')}
-                    >
-                        <Text style={[styles.filterText, filterType === 'in-person' && styles.filterTextActive]}>
-                            In-Person
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.filterButton, filterType === 'online' && styles.filterButtonActive]}
-                        onPress={() => setFilterType('online')}
-                    >
-                        <Text style={[styles.filterText, filterType === 'online' && styles.filterTextActive]}>
-                            Online
-                        </Text>
+                        {activeFilters.length > 0 && (
+                            <TouchableOpacity
+                                style={styles.activeFilterBadge}
+                                onPress={(e) => {
+                                    e.stopPropagation();
+                                    setActiveFilters([]);
+                                }}
+                            >
+                                <Ionicons name="close" size={12} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        )}
                     </TouchableOpacity>
                 </View>
 
@@ -376,8 +423,19 @@ export function EventsListPage({ onNavigate }) {
                                             />
                                         </View>
                                     </View>
-                                    <View style={styles.eventTypeTag}>
-                                        <Text style={styles.eventTypeText}>{event.type}</Text>
+                                    <View style={styles.eventTypeContainer}>
+                                        <View style={styles.eventTypeTag}>
+                                            <Text style={styles.eventTypeText}>{event.type}</Text>
+                                        </View>
+                                        {event.facilitatorType && (
+                                            <View style={styles.facilitatorTypeTag}>
+                                                <Text style={styles.facilitatorTypeText}>
+                                                    {event.facilitatorType === 'ai' ? 'AI' :
+                                                     event.facilitatorType === 'human' ? 'Human' :
+                                                     event.facilitatorType === 'hybrid' ? 'Hybrid' : ''}
+                                                </Text>
+                                            </View>
+                                        )}
                                     </View>
                                 </LinearGradient>
                             </TouchableOpacity>
@@ -389,6 +447,199 @@ export function EventsListPage({ onNavigate }) {
                 <View style={styles.bottomNavContainer}>
                     <BottomNav currentPage="events-list" onNavigate={onNavigate} />
                 </View>
+
+                {/* Filter Modal */}
+                <Modal
+                    transparent={true}
+                    visible={showFilterModal}
+                    animationType="fade"
+                    onRequestClose={() => setShowFilterModal(false)}
+                >
+                    <TouchableOpacity
+                        style={styles.filterModalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setShowFilterModal(false)}
+                    >
+                        <View style={styles.filterModalContent} onStartShouldSetResponder={() => true}>
+                            {/* Decorative Circles */}
+                            <View style={styles.filterModalCircleTopRight}>
+                                <LinearGradient colors={['#BFDBFE', '#DBEAFE']} style={styles.filterModalCircle} />
+                            </View>
+                            <View style={styles.filterModalCircleBottomLeft}>
+                                <LinearGradient colors={['#D1C5FD', '#CABDFD']} style={styles.filterModalCircle} />
+                            </View>
+
+                            {/* Header with Gradient */}
+                            <LinearGradient
+                                colors={['#E9D5FF', '#DBEAFE']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.filterModalHeaderGradient}
+                            >
+                                <View style={styles.filterModalHeader}>
+                                    <Text style={styles.filterModalTitle}>Filter Events</Text>
+                                    <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+                                        <Ionicons name="close" size={24} color="#FFFFFF" />
+                                    </TouchableOpacity>
+                                </View>
+                            </LinearGradient>
+
+                            <ScrollView style={styles.filterOptionsContainer} showsVerticalScrollIndicator={false}>
+                                {/* Location Type Filters */}
+                                <Text style={styles.filterSectionTitle}>Location Type</Text>
+                                <TouchableOpacity
+                                    style={styles.filterOptionContainer}
+                                    onPress={() => toggleFilter('in-person')}
+                                    activeOpacity={0.7}
+                                >
+                                    {activeFilters.includes('in-person') ? (
+                                        <LinearGradient
+                                            colors={['#D1C5FD', '#CABDFD']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            style={styles.filterOptionGradient}
+                                        >
+                                            <Text style={styles.filterOptionTextActive}>
+                                                In-Person
+                                            </Text>
+                                            <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+                                        </LinearGradient>
+                                    ) : (
+                                        <View style={styles.filterOption}>
+                                            <Text style={styles.filterOptionText}>
+                                                In-Person
+                                            </Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.filterOptionContainer}
+                                    onPress={() => toggleFilter('online')}
+                                    activeOpacity={0.7}
+                                >
+                                    {activeFilters.includes('online') ? (
+                                        <LinearGradient
+                                            colors={['#D1C5FD', '#CABDFD']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            style={styles.filterOptionGradient}
+                                        >
+                                            <Text style={styles.filterOptionTextActive}>
+                                                Online
+                                            </Text>
+                                            <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+                                        </LinearGradient>
+                                    ) : (
+                                        <View style={styles.filterOption}>
+                                            <Text style={styles.filterOptionText}>
+                                                Online
+                                            </Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+
+                                {/* Facilitator Type Filters */}
+                                <Text style={[styles.filterSectionTitle, styles.filterSectionTitleMargin]}>Facilitator Type</Text>
+                                <TouchableOpacity
+                                    style={styles.filterOptionContainer}
+                                    onPress={() => toggleFilter('ai')}
+                                    activeOpacity={0.7}
+                                >
+                                    {activeFilters.includes('ai') ? (
+                                        <LinearGradient
+                                            colors={['#D1C5FD', '#CABDFD']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            style={styles.filterOptionGradient}
+                                        >
+                                            <Text style={styles.filterOptionTextActive}>
+                                                AI Only
+                                            </Text>
+                                            <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+                                        </LinearGradient>
+                                    ) : (
+                                        <View style={styles.filterOption}>
+                                            <Text style={styles.filterOptionText}>
+                                                AI Only
+                                            </Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.filterOptionContainer}
+                                    onPress={() => toggleFilter('human')}
+                                    activeOpacity={0.7}
+                                >
+                                    {activeFilters.includes('human') ? (
+                                        <LinearGradient
+                                            colors={['#D1C5FD', '#CABDFD']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            style={styles.filterOptionGradient}
+                                        >
+                                            <Text style={styles.filterOptionTextActive}>
+                                                Human Only
+                                            </Text>
+                                            <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+                                        </LinearGradient>
+                                    ) : (
+                                        <View style={styles.filterOption}>
+                                            <Text style={styles.filterOptionText}>
+                                                Human Only
+                                            </Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.filterOptionContainer}
+                                    onPress={() => toggleFilter('hybrid')}
+                                    activeOpacity={0.7}
+                                >
+                                    {activeFilters.includes('hybrid') ? (
+                                        <LinearGradient
+                                            colors={['#D1C5FD', '#CABDFD']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            style={styles.filterOptionGradient}
+                                        >
+                                            <Text style={styles.filterOptionTextActive}>
+                                                Hybrid
+                                            </Text>
+                                            <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+                                        </LinearGradient>
+                                    ) : (
+                                        <View style={styles.filterOption}>
+                                            <Text style={styles.filterOptionText}>
+                                                Hybrid
+                                            </Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            </ScrollView>
+
+                            <View style={styles.filterModalFooter}>
+                                <TouchableOpacity
+                                    style={styles.clearFilterButton}
+                                    onPress={() => {
+                                        setActiveFilters([]);
+                                    }}
+                                    activeOpacity={0.8}
+                                >
+                                    <LinearGradient
+                                        colors={['#D1C5FD', '#BFDBFE']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        style={styles.clearFilterButtonGradient}
+                                    >
+                                        <Text style={styles.clearFilterText}>
+                                            {activeFilters.length > 0 ? 'Clear Filters' : 'No Filters Applied'}
+                                        </Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
             </View>
         );
     }
@@ -419,8 +670,19 @@ export function EventsListPage({ onNavigate }) {
                 >
                     <Text style={styles.detailsTitle}>{selectedEvent.title}</Text>
                     <Text style={styles.detailsTime}>{selectedEvent.day} at {selectedEvent.time.replace('pm', '')}</Text>
-                    <View style={styles.detailsTypeTag}>
-                        <Text style={styles.detailsTypeText}>{selectedEvent.type}</Text>
+                    <View style={styles.detailsTypeContainer}>
+                        <View style={styles.detailsTypeTag}>
+                            <Text style={styles.detailsTypeText}>{selectedEvent.type}</Text>
+                        </View>
+                        {selectedEvent.facilitatorType && (
+                            <View style={styles.detailsFacilitatorTypeTag}>
+                                <Text style={styles.detailsFacilitatorTypeText}>
+                                    {selectedEvent.facilitatorType === 'ai' ? 'AI' :
+                                     selectedEvent.facilitatorType === 'human' ? 'Human' :
+                                     selectedEvent.facilitatorType === 'hybrid' ? 'Hybrid' : ''}
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 </LinearGradient>
 
@@ -588,28 +850,41 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 20,
         paddingBottom: 10,
-        gap: 10,
     },
-    filterButton: {
+    filterButtonMain: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingHorizontal: 20,
-        paddingVertical: 8,
-        borderRadius: 20,
-        borderWidth: 1,
+        paddingVertical: 12,
+        borderRadius: 25,
+        borderWidth: 2,
         borderColor: '#E5E7EB',
         backgroundColor: '#FFFFFF',
+    },
+    filterButtonMainActive: {
+        backgroundColor: '#7C3AED',
+        borderColor: '#7C3AED',
     },
     filterButtonActive: {
         backgroundColor: '#7C3AED',
         borderColor: '#7C3AED',
     },
-    filterText: {
-        fontSize: 14,
-        color: '#6B7280',
-        fontWeight: '500',
-    },
-    filterTextActive: {
-        color: '#FFFFFF',
+    filterButtonMainText: {
+        fontSize: 15,
+        color: '#7C3AED',
         fontWeight: '600',
+    },
+    filterButtonMainTextActive: {
+        color: '#FFFFFF',
+    },
+    activeFilterBadge: {
+        marginLeft: 8,
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     scrollView: {
         flex: 1,
@@ -681,10 +956,14 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-    eventTypeTag: {
+    eventTypeContainer: {
         position: 'absolute',
         top: 15,
         right: 15,
+        flexDirection: 'row',
+        gap: 6,
+    },
+    eventTypeTag: {
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         paddingHorizontal: 12,
         paddingVertical: 6,
@@ -694,6 +973,20 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#7C3AED',
         fontWeight: '600',
+    },
+    facilitatorTypeTag: {
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 15,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+    },
+    facilitatorTypeText: {
+        fontSize: 11,
+        color: '#7C3AED',
+        fontWeight: '600',
+        textTransform: 'capitalize',
     },
     // Event Details Styles
     detailsHeader: {
@@ -736,10 +1029,14 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: '500',
     },
-    detailsTypeTag: {
+    detailsTypeContainer: {
         position: 'absolute',
         top: 20,
         right: 20,
+        flexDirection: 'row',
+        gap: 8,
+    },
+    detailsTypeTag: {
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         paddingHorizontal: 14,
         paddingVertical: 8,
@@ -749,6 +1046,20 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#7C3AED',
         fontWeight: '600',
+    },
+    detailsFacilitatorTypeTag: {
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 15,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+    },
+    detailsFacilitatorTypeText: {
+        fontSize: 12,
+        color: '#7C3AED',
+        fontWeight: '600',
+        textTransform: 'capitalize',
     },
     noteBox: {
         backgroundColor: '#E0E7FF',
@@ -832,5 +1143,156 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#6B7280',
         textAlign: 'center',
+    },
+    // Filter Modal Styles
+    filterModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        justifyContent: 'flex-end',
+    },
+    filterModalContent: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        paddingBottom: 40,
+        maxHeight: '85%',
+        shadowColor: '#7C3AED',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 15,
+        elevation: 15,
+        overflow: 'hidden',
+    },
+    filterModalCircleTopRight: {
+        position: 'absolute',
+        top: -60,
+        right: -60,
+        width: 150,
+        height: 150,
+        borderRadius: 75,
+        opacity: 0.5,
+        overflow: 'hidden',
+        zIndex: 0,
+    },
+    filterModalCircleBottomLeft: {
+        position: 'absolute',
+        bottom: -80,
+        left: -80,
+        width: 180,
+        height: 180,
+        borderRadius: 90,
+        opacity: 0.5,
+        overflow: 'hidden',
+        zIndex: 0,
+    },
+    filterModalCircle: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 200,
+    },
+    filterModalHeaderGradient: {
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        paddingTop: 20,
+        paddingBottom: 15,
+        zIndex: 1,
+    },
+    filterModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        zIndex: 1,
+    },
+    filterModalTitle: {
+        fontSize: 26,
+        fontWeight: '700',
+        color: '#FFFFFF',
+    },
+    filterOptionsContainer: {
+        paddingHorizontal: 24,
+        paddingTop: 24,
+        maxHeight: 450,
+        zIndex: 1,
+    },
+    filterSectionTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#374151',
+        marginBottom: 14,
+        marginTop: 8,
+    },
+    filterSectionTitleMargin: {
+        marginTop: 28,
+    },
+    filterOptionContainer: {
+        marginBottom: 10,
+        borderRadius: 16,
+        overflow: 'hidden',
+        shadowColor: '#D1C5FD',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    filterOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderRadius: 16,
+        backgroundColor: '#F9FAFB',
+        borderWidth: 2,
+        borderColor: '#E5E7EB',
+    },
+    filterOptionGradient: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderRadius: 16,
+        shadowColor: '#D1C5FD',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 4,
+    },
+    filterOptionText: {
+        fontSize: 16,
+        color: '#6B7280',
+        fontWeight: '500',
+    },
+    filterOptionTextActive: {
+        fontSize: 16,
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    filterModalFooter: {
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#E5E7EB',
+        marginTop: 10,
+    },
+    clearFilterButton: {
+        borderRadius: 25,
+        overflow: 'hidden',
+        shadowColor: '#D1C5FD',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    clearFilterButtonGradient: {
+        paddingVertical: 16,
+        alignItems: 'center',
+        borderRadius: 25,
+    },
+    clearFilterText: {
+        fontSize: 16,
+        color: '#FFFFFF',
+        fontWeight: '600',
     },
 });
