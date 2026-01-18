@@ -649,6 +649,9 @@ export function EventsListPage({ onNavigate }) {
         <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
 
+            {/* White rectangle at top */}
+            <View style={styles.topWhiteRectangle} />
+
             {/* Header with back button */}
             <View style={styles.detailsHeader}>
                 <TouchableOpacity onPress={handleBackToList} style={styles.backButton}>
@@ -822,6 +825,15 @@ const styles = StyleSheet.create({
         height: '100%',
         borderRadius: 200,
     },
+    topWhiteRectangle: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 50,
+        backgroundColor: '#FFFFFF',
+        zIndex: 2,
+    },
     searchContainer: {
         paddingHorizontal: 20,
         paddingTop: 60,
@@ -951,6 +963,7 @@ const styles = StyleSheet.create({
         height: 100,
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: 20,
     },
     eventImage: {
         width: '100%',
@@ -995,6 +1008,8 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
+        marginTop: 50,
+        zIndex: 1,
     },
     backButton: {
         flexDirection: 'row',
