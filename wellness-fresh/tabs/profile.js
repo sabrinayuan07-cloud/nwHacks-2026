@@ -12,6 +12,7 @@ import {
     Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import BottomNav from './bottomNav';
 
 // Map animal names to their PNG images (same as createAccount.js)
@@ -41,9 +42,12 @@ const upcomingEvents = [
 ];
 
 export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) {
+    const [isPublicView, setIsPublicView] = useState(false); // false = anonymous (default), true = public
     const [showEditModal, setShowEditModal] = useState(false);
     const [editUsername, setEditUsername] = useState(userData?.username || '');
     const [editPronouns, setEditPronouns] = useState(userData?.pronouns || '');
+    const [editProgram, setEditProgram] = useState(userData?.program || '');
+    const [editYear, setEditYear] = useState(userData?.year || '');
 
     // Get the profile picture - check pfp first, then animal, then extract from username
     const getProfilePicture = () => {
@@ -78,19 +82,39 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
     };
 
     const handleEditProfile = () => {
-        setEditUsername(userData?.username || '');
-        setEditPronouns(userData?.pronouns || '');
+        if (isPublicView) {
+            // Load program and year for public view
+            setEditProgram(userData?.program || '');
+            setEditYear(userData?.year || '');
+        } else {
+            // Load username and pronouns for anonymous view
+            setEditUsername(userData?.username || '');
+            setEditPronouns(userData?.pronouns || '');
+        }
         setShowEditModal(true);
     };
 
     const handleSaveProfile = () => {
         if (onUpdateUserData) {
-            onUpdateUserData({
-                username: editUsername,
-                pronouns: editPronouns
-            });
+            if (isPublicView) {
+                // Save program and year for public view
+                onUpdateUserData({
+                    program: editProgram,
+                    year: editYear
+                });
+            } else {
+                // Save username and pronouns for anonymous view
+                onUpdateUserData({
+                    username: editUsername,
+                    pronouns: editPronouns
+                });
+            }
         }
         setShowEditModal(false);
+    };
+
+    const handleToggleView = () => {
+        setIsPublicView(!isPublicView);
     };
 
     return (
@@ -109,6 +133,17 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
                     colors={['#D1C5FD', '#CABDFD']}
                     style={styles.circle}
                 />
+            </View>
+
+            {/* Eye Icon Button - Top Right */}
+            <View style={styles.eyeIconContainer}>
+                <TouchableOpacity onPress={handleToggleView} style={styles.eyeIconButton}>
+                    <Ionicons 
+                        name={isPublicView ? "eye" : "eye-off"} 
+                        size={24} 
+                        color="#000000" 
+                    />
+                </TouchableOpacity>
             </View>
 
             <ScrollView
@@ -130,15 +165,43 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
                             />
                         </LinearGradient>
                     </View>
-                    <Text
-                        style={styles.username}
-                        numberOfLines={1}
-                        adjustsFontSizeToFit
-                        minimumFontScale={0.6}
-                    >
-                        {userData?.username || 'calm-otter'}
-                    </Text>
-                    <Text style={styles.pronouns}>{userData?.pronouns || 'they/them'}</Text>
+                    {isPublicView ? (
+                        <>
+                            <Text
+                                style={styles.username}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.6}
+                            >
+                                {userData?.firstName && userData?.lastName 
+                                    ? `${userData.firstName} ${userData.lastName}`
+                                    : userData?.firstName || userData?.lastName || 'Your Name'}
+                            </Text>
+                            <Text style={styles.pronouns}>{userData?.pronouns || 'they/them'}</Text>
+                            {(userData?.program || userData?.year) && (
+                                <View style={styles.publicInfoContainer}>
+                                    {userData?.program && (
+                                        <Text style={styles.publicInfoText}>Program: {userData.program}</Text>
+                                    )}
+                                    {userData?.year && (
+                                        <Text style={styles.publicInfoText}>Year: {userData.year}</Text>
+                                    )}
+                                </View>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <Text
+                                style={styles.username}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.6}
+                            >
+                                {userData?.username || 'calm-otter'}
+                            </Text>
+                            <Text style={styles.pronouns}>{userData?.pronouns || 'they/them'}</Text>
+                        </>
+                    )}
                 </View>
 
                 {/* Interests Section */}
@@ -184,7 +247,10 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
 
                 {/* Action Buttons */}
                 <View style={styles.buttonsSection}>
-                    <TouchableOpacity style={styles.editProfileButton} onPress={handleEditProfile}>
+                    <TouchableOpacity 
+                        style={styles.editProfileButton} 
+                        onPress={handleEditProfile}
+                    >
                         <LinearGradient
                             colors={['#D1C5FD', '#CABDFD', '#BFDBFE']}
                             start={{ x: 0, y: 0 }}
@@ -216,29 +282,59 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
                 <View style={styles.modalOverlay}>
                     <View style={styles.editModalContent}>
                         <View style={styles.editModalHeader}>
-                            <Text style={styles.editModalTitle}>Edit Profile</Text>
+                            <Text style={styles.editModalTitle}>
+                                {isPublicView ? 'Edit Public Profile' : 'Edit Profile'}
+                            </Text>
                             <TouchableOpacity onPress={() => setShowEditModal(false)}>
                                 <Text style={styles.closeButton}>✕</Text>
                             </TouchableOpacity>
                         </View>
 
-                        <Text style={styles.inputLabel}>Username</Text>
-                        <TextInput
-                            style={styles.editInput}
-                            value={editUsername}
-                            onChangeText={setEditUsername}
-                            placeholder="Enter username"
-                            placeholderTextColor="#9CA3AF"
-                        />
+                        {!isPublicView && (
+                            <>
+                                <Text style={styles.inputLabel}>Username</Text>
+                                <TextInput
+                                    style={styles.editInput}
+                                    value={editUsername}
+                                    onChangeText={setEditUsername}
+                                    placeholder="Enter username"
+                                    placeholderTextColor="#9CA3AF"
+                                />
+                            </>
+                        )}
 
-                        <Text style={styles.inputLabel}>Pronouns</Text>
-                        <TextInput
-                            style={styles.editInput}
-                            value={editPronouns}
-                            onChangeText={setEditPronouns}
-                            placeholder="e.g., they/them, she/her, he/him"
-                            placeholderTextColor="#9CA3AF"
-                        />
+                        {isPublicView ? (
+                            <>
+                                <Text style={styles.inputLabel}>Program</Text>
+                                <TextInput
+                                    style={styles.editInput}
+                                    value={editProgram}
+                                    onChangeText={setEditProgram}
+                                    placeholder="e.g., Computer Science, Psychology"
+                                    placeholderTextColor="#9CA3AF"
+                                />
+
+                                <Text style={styles.inputLabel}>Year</Text>
+                                <TextInput
+                                    style={styles.editInput}
+                                    value={editYear}
+                                    onChangeText={setEditYear}
+                                    placeholder="e.g., First Year, Second Year, Graduate"
+                                    placeholderTextColor="#9CA3AF"
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <Text style={styles.inputLabel}>Pronouns</Text>
+                                <TextInput
+                                    style={styles.editInput}
+                                    value={editPronouns}
+                                    onChangeText={setEditPronouns}
+                                    placeholder="e.g., they/them, she/her, he/him"
+                                    placeholderTextColor="#9CA3AF"
+                                />
+                            </>
+                        )}
 
                         <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
                             <LinearGradient
@@ -302,6 +398,24 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 80,
         paddingBottom: 120,
+    },
+    eyeIconContainer: {
+        position: 'absolute',
+        top: 60,
+        right: 20,
+        zIndex: 10,
+    },
+    eyeIconButton: {
+        padding: 8,
+    },
+    publicInfoContainer: {
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    publicInfoText: {
+        fontSize: 14,
+        color: '#6B7280',
+        marginTop: 4,
     },
 
     // Avatar Section

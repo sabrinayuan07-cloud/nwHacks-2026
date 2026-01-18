@@ -20,7 +20,9 @@ export default function App() {
         username: '',
         animal: '',
         pfp: '',
-        interests: []
+        interests: [],
+        program: '',
+        year: ''
     });
 
     const handleNavigate = (page) => {
