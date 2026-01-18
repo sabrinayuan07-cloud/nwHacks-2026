@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
 
 // Import pages
 import WelcomePage from './tabs/welcome';
 import { SignInPage, CWLAuthPage } from './tabs/signIn';
 import { AccountStep1, AccountStep2, AccountStep3, AccountStep4 } from './tabs/createAccount';
+import HomePage from './tabs/homepage';
+import { EventsListPage } from './tabs/events';
+import Messages from './tabs/messages';
+import ProfilePage from './tabs/profile';
 
-export default function App() {,
+export default function App() {
+    console.log('🚀 Using UPDATED App.js with Events navigation');
     const [currentPage, setCurrentPage] = useState('welcome');
     const [userData, setUserData] = useState({
         firstName: '',
@@ -26,25 +30,6 @@ export default function App() {,
         setUserData({ ...userData, ...newData });
     };
 
-    // Home Page (Placeholder)
-    const HomePage = () => (
-        <SafeAreaView style={styles.whiteContainer}>
-            <StatusBar barStyle="dark-content" />
-            <View style={styles.homeContainer}>
-                <Text style={styles.homeTitle}>Welcome, {userData.username}! {userData.pfp}</Text>
-                <Text style={styles.homeSubtitle}>Your account has been created</Text>
-
-                <View style={styles.profileSummary}>
-                    <Text style={styles.summaryText}>Name: {userData.firstName} {userData.lastName}</Text>
-                    <Text style={styles.summaryText}>Pronouns: {userData.pronouns}</Text>
-                    <Text style={styles.summaryText}>Interests: {userData.interests.join(', ')}</Text>
-                </View>
-
-                <Text style={styles.homeNote}>Home/Events page coming next! 🎉</Text>
-            </View>
-        </SafeAreaView>
-    );
-
     // Render current page
     const renderPage = () => {
         switch (currentPage) {
@@ -63,7 +48,15 @@ export default function App() {,
             case 'account-step4':
                 return <AccountStep4 onNavigate={handleNavigate} userData={userData} onUpdateUserData={handleUpdateUserData} />;
             case 'home':
-                return <HomePage />;
+                return <HomePage onNavigate={handleNavigate} userData={userData} />;
+            case 'events-list':
+                return <EventsListPage onNavigate={handleNavigate} />;
+            case 'event-details':
+                return <EventsListPage onNavigate={handleNavigate} />;
+            case 'messages':
+                return <Messages onNavigate={handleNavigate} />;
+            case 'profile':
+                return <ProfilePage onNavigate={handleNavigate} userData={userData} />;
             default:
                 return <WelcomePage onNavigate={handleNavigate} />;
         }
@@ -71,45 +64,3 @@ export default function App() {,
 
     return renderPage();
 }
-
-const styles = StyleSheet.create({
-    whiteContainer: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    homeContainer: {
-        flex: 1,
-        padding: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    homeTitle: {
-        fontSize: 32,
-        fontWeight: '700',
-        color: '#000000',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    homeSubtitle: {
-        fontSize: 16,
-        color: '#6B7280',
-        marginBottom: 40,
-    },
-    profileSummary: {
-        backgroundColor: '#F9FAFB',
-        padding: 20,
-        borderRadius: 15,
-        width: '100%',
-        marginBottom: 30,
-    },
-    summaryText: {
-        fontSize: 14,
-        color: '#374151',
-        marginBottom: 8,
-    },
-    homeNote: {
-        fontSize: 18,
-        color: '#7C3AED',
-        fontWeight: '600',
-    },
-});
