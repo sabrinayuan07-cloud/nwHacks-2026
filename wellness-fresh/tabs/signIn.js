@@ -22,8 +22,8 @@ export function SignInPage({ onNavigate }) {
 
             <View style={styles.content}>
                 <View style={styles.headerSection}>
-                    <Text style={styles.appName}>RedBull</Text>
-                    <Text style={styles.subtitle}>Your UBC wellness community</Text>
+                    <Text style={styles.appName}>Ripple</Text>
+                    <Text style={styles.subtitle}>Small impacts, big changes</Text>
                 </View>
                 <View style={styles.signinOtterContainer}>
                     <Image

@@ -86,7 +86,7 @@ export default function HomePage({ onNavigate }) {
                 <View style={styles.header}>
                     <View>
                         <Text style={styles.appName}>Ripple</Text>
-                        <Text style={styles.subtitle}>Your UBC wellness community</Text>
+                        <Text style={styles.subtitle}>Small impacts, big changes</Text>
                     </View>
                     <TouchableOpacity
                         style={styles.notificationIcon}

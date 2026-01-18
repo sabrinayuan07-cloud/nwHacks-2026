@@ -19,7 +19,7 @@ export default function WelcomePage({ onNavigate }) {
                     resizeMode="contain"
                 />
                 <Text style={styles.appName}>Ripple</Text>
-                <Text style={styles.subtitle}>Your UBC wellness community</Text>
+                <Text style={styles.subtitle}>Small impacts, big changes</Text>
                 <Text style={styles.question}>What brings you here?</Text>
                 <Text style={styles.subQuestion}>Choose your journey</Text>
                 <TouchableOpacity

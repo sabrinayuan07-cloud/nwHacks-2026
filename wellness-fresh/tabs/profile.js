@@ -25,6 +25,14 @@ const animalImages = {
 
 const animals = ['otter', 'cat', 'dog', 'bunny'];
 
+const interestOptions = [
+    'Reading', 'Writing', 'Gaming', 'Cooking', 'Baking', 'Art', 'Music',
+    'Sports', 'Fitness', 'Yoga', 'Hiking', 'Camping', 'Photography',
+    'Movies', 'TV Shows', 'Anime', 'Travel', 'Languages', 'Dancing',
+    'Meditation', 'Podcasts', 'Board Games', 'Crafts', 'Fashion',
+    'Tech', 'Coding', 'Science', 'History', 'Politics', 'Volunteering'
+];
+
 // Sample upcoming events data
 const upcomingEvents = [
     {
@@ -44,10 +52,12 @@ const upcomingEvents = [
 export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) {
     const [isPublicView, setIsPublicView] = useState(false); // false = anonymous (default), true = public
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showEditInterestsModal, setShowEditInterestsModal] = useState(false);
     const [editUsername, setEditUsername] = useState(userData?.username || '');
     const [editPronouns, setEditPronouns] = useState(userData?.pronouns || '');
     const [editProgram, setEditProgram] = useState(userData?.program || '');
     const [editYear, setEditYear] = useState(userData?.year || '');
+    const [selectedInterests, setSelectedInterests] = useState(userData?.interests || []);
 
     // Get the profile picture - check pfp first, then animal, then extract from username
     const getProfilePicture = () => {
@@ -115,6 +125,26 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
 
     const handleToggleView = () => {
         setIsPublicView(!isPublicView);
+    };
+
+    const toggleInterest = (interest) => {
+        if (selectedInterests.includes(interest)) {
+            setSelectedInterests(selectedInterests.filter(i => i !== interest));
+        } else if (selectedInterests.length < 3) {
+            setSelectedInterests([...selectedInterests, interest]);
+        }
+    };
+
+    const handleSaveInterests = () => {
+        if (onUpdateUserData) {
+            onUpdateUserData({ interests: selectedInterests });
+        }
+        setShowEditInterestsModal(false);
+    };
+
+    const handleEditInterests = () => {
+        setSelectedInterests(userData?.interests || []);
+        setShowEditInterestsModal(true);
     };
 
     return (
@@ -206,7 +236,14 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
 
                 {/* Interests Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Interests</Text>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Interests</Text>
+                        {!isPublicView && (
+                            <TouchableOpacity onPress={handleEditInterests}>
+                                <Text style={styles.editInterestsText}>Edit</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
                     <View style={styles.interestsContainer}>
                         {(userData?.interests && userData.interests.length > 0
                             ? userData.interests
@@ -350,6 +387,64 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
                 </View>
             </Modal>
 
+            {/* Edit Interests Modal */}
+            <Modal
+                visible={showEditInterestsModal}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setShowEditInterestsModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.editModalContent}>
+                        <View style={styles.editModalHeader}>
+                            <Text style={styles.editModalTitle}>Edit Interests</Text>
+                            <TouchableOpacity onPress={() => setShowEditInterestsModal(false)}>
+                                <Text style={styles.closeButton}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={styles.inputLabel}>Select up to 3 interests ({selectedInterests.length}/3 selected)</Text>
+                        
+                        <ScrollView style={styles.interestsGridModal} showsVerticalScrollIndicator={true}>
+                            <View style={styles.interestsGrid}>
+                                {interestOptions.map((interest) => (
+                                    <TouchableOpacity
+                                        key={interest}
+                                        style={[
+                                            styles.interestChipModal,
+                                            selectedInterests.includes(interest) && styles.interestChipModalSelected
+                                        ]}
+                                        onPress={() => toggleInterest(interest)}
+                                    >
+                                        <Text style={[
+                                            styles.interestTextModal,
+                                            selectedInterests.includes(interest) && styles.interestTextModalSelected
+                                        ]}>
+                                            {interest}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </ScrollView>
+
+                        <TouchableOpacity 
+                            style={[styles.saveButton, selectedInterests.length === 0 && styles.saveButtonDisabled]} 
+                            onPress={handleSaveInterests}
+                            disabled={selectedInterests.length === 0}
+                        >
+                            <LinearGradient
+                                colors={['#D1C5FD', '#BFDBFE']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.saveButtonGradient}
+                            >
+                                <Text style={styles.saveButtonText}>Save Interests</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
             {/* Fixed Bottom Navigation */}
             <View style={styles.bottomNavContainer}>
                 <BottomNav currentPage="profile" onNavigate={onNavigate} />
@@ -452,11 +547,21 @@ const styles = StyleSheet.create({
     section: {
         marginBottom: 25,
     },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
     sectionTitle: {
         fontSize: 20,
         fontWeight: '700',
         color: '#000000',
-        marginBottom: 15,
+    },
+    editInterestsText: {
+        fontSize: 14,
+        color: '#7C3AED',
+        fontWeight: '600',
     },
 
     // Interests
@@ -623,6 +728,38 @@ const styles = StyleSheet.create({
     saveButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
+        fontWeight: '600',
+    },
+    saveButtonDisabled: {
+        opacity: 0.5,
+    },
+    interestsGridModal: {
+        maxHeight: 300,
+        marginBottom: 20,
+    },
+    interestsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+    },
+    interestChipModal: {
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: '#E5E7EB',
+        backgroundColor: '#FFFFFF',
+    },
+    interestChipModalSelected: {
+        borderColor: '#D1C5FD',
+        backgroundColor: '#F3E8FF',
+    },
+    interestTextModal: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    interestTextModalSelected: {
+        color: '#7C3AED',
         fontWeight: '600',
     },
 });
