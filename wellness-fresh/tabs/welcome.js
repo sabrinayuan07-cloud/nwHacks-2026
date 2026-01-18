@@ -18,7 +18,7 @@ export default function WelcomePage({ onNavigate }) {
                     style={styles.otterImage}
                     resizeMode="contain"
                 />
-                <Text style={styles.appName}>RedBull</Text>
+                <Text style={styles.appName}>Ripple</Text>
                 <Text style={styles.subtitle}>Your UBC wellness community</Text>
                 <Text style={styles.question}>What brings you here?</Text>
                 <Text style={styles.subQuestion}>Choose your journey</Text>

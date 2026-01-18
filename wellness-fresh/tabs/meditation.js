@@ -7,7 +7,9 @@ import {
     TouchableOpacity,
     StatusBar,
     ActivityIndicator,
-    Alert
+    Alert,
+    Image,
+    Platform
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Audio } from 'expo-av';
@@ -18,11 +20,41 @@ const ELEVENLABS_API_KEY = 'sk_2b0019acf648c780f89dbda7a084f2d10618a395ecf3eaef'
 
 // Available voices from ElevenLabs (includes male & female options)
 const voices = [
-    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', description: 'Soft & Calming', gender: 'female' },
-    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'Warm & Gentle', gender: 'female' },
-    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', description: 'Deep & Warm', gender: 'male' },
-    { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Calm & Smooth', gender: 'male' },
-    { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Deep & Grounding', gender: 'male' },
+    {
+        id: 'EXAVITQu4vr4xnSDxMaL',
+        name: 'Sarah',
+        description: 'Soft & Calming',
+        gender: 'female',
+        avatar: require('../assets/images/FemaleOtter1.png')
+    },
+    {
+        id: '21m00Tcm4TlvDq8ikWAM',
+        name: 'Rachel',
+        description: 'Warm & Gentle',
+        gender: 'female',
+        avatar: require('../assets/images/FemaleOtter2.png')
+    },
+    {
+        id: 'TxGEqnHWrfWFTfGW9XjX',
+        name: 'Josh',
+        description: 'Deep & Warm',
+        gender: 'male',
+        avatar: require('../assets/images/MaleOtter1.png')
+    },
+    {
+        id: 'ErXwobaYiN019PkySvjV',
+        name: 'Antoni',
+        description: 'Calm & Smooth',
+        gender: 'male',
+        avatar: require('../assets/images/MaleOtter2.png')
+    },
+    {
+        id: 'pNInz6obpgDQGcFmaJgB',
+        name: 'Adam',
+        description: 'Deep & Grounding',
+        gender: 'male',
+        avatar: require('../assets/images/MaleOtter3.png')
+    },
 ];
 
 // Meditation scripts (shortened for faster loading)
@@ -190,7 +222,11 @@ export default function MeditationPage({ onNavigate }) {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+            <StatusBar
+                barStyle="dark-content"
+                backgroundColor="#FFFFFF"
+                translucent={false}
+            />
 
             {/* Decorative Circles */}
             <View style={styles.gradientCircleTopRight}>
@@ -239,11 +275,14 @@ export default function MeditationPage({ onNavigate }) {
                                         : ['#F9FAFB', '#F3F4F6']}
                                     style={styles.voiceCardGradient}
                                 >
-                                    <Ionicons
-                                        name="person-circle"
-                                        size={32}
-                                        color={selectedVoice.id === voice.id ? '#FFFFFF' : '#9CA3AF'}
-                                    />
+                                    <View style={styles.avatarContainer}>
+                                        <Image
+                                            source={voice.avatar}
+                                            style={styles.avatarImage}
+                                            resizeMode="cover"
+                                            fadeDuration={0}
+                                        />
+                                    </View>
                                     <Text style={[
                                         styles.voiceName,
                                         selectedVoice.id === voice.id && styles.voiceNameSelected
@@ -328,6 +367,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     gradientCircleTopRight: {
         position: 'absolute',
@@ -404,6 +444,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: 110,
         borderRadius: 16,
+    },
+    avatarContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        overflow: 'hidden',
+        backgroundColor: '#E5E7EB',
+        marginBottom: 8,
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
     },
     voiceName: {
         fontSize: 14,

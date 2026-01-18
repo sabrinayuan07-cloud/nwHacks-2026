@@ -9,7 +9,8 @@ import {
     Image,
     Modal,
     TextInput,
-    Keyboard
+    Keyboard,
+    Platform
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,7 +57,11 @@ export default function HomePage({ onNavigate }) {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+            <StatusBar
+                barStyle="dark-content"
+                backgroundColor="#FFFFFF"
+                translucent={false}
+            />
 
             {/* Decorative Circles */}
             <View style={styles.gradientCircleTopRight}>
@@ -80,7 +85,7 @@ export default function HomePage({ onNavigate }) {
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.appName}>Name</Text>
+                        <Text style={styles.appName}>Ripple</Text>
                         <Text style={styles.subtitle}>Your UBC wellness community</Text>
                     </View>
                     <TouchableOpacity
@@ -112,6 +117,7 @@ export default function HomePage({ onNavigate }) {
                         source={require('../assets/images/HomePage.png')}
                         style={styles.otterImage}
                         resizeMode="contain"
+                        fadeDuration={0}
                     />
                 </View>
 
@@ -294,6 +300,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
 
     // Decorative Circles
