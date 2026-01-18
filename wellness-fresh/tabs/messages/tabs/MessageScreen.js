@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const MessagesList = ({ onSelectChat }) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -110,7 +111,21 @@ const MessagesList = ({ onSelectChat }) => {
 
     return (
         <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-            <View style={{ padding: 20, paddingTop: 60 }}>
+            {/* Decorative Circles */}
+            <View style={styles.gradientCircleTopRight}>
+                <LinearGradient
+                    colors={['#BFDBFE', '#DBEAFE']}
+                    style={styles.circle}
+                />
+            </View>
+            <View style={styles.gradientCircleBottomLeft}>
+                <LinearGradient
+                    colors={['#D1C5FD', '#CABDFD']}
+                    style={styles.circle}
+                />
+            </View>
+
+            <View style={{ padding: 20, paddingTop: 60, zIndex: 1 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text style={{ fontSize: 32, fontWeight: 'bold' }}>Messages</Text>
                     <TouchableOpacity onPress={() => setShowSearch(!showSearch)}>
@@ -136,7 +151,10 @@ const MessagesList = ({ onSelectChat }) => {
                 </View>
             )}
 
-            <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+            <ScrollView 
+                style={{ zIndex: 1 }}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {filteredMessages.map((msg) => (
                     <TouchableOpacity
                         key={msg.id}
@@ -175,5 +193,32 @@ const MessagesList = ({ onSelectChat }) => {
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    gradientCircleTopRight: {
+        position: 'absolute',
+        top: -100,
+        right: -100,
+        width: 250,
+        height: 250,
+        overflow: 'hidden',
+        zIndex: 0,
+    },
+    gradientCircleBottomLeft: {
+        position: 'absolute',
+        bottom: 200,
+        left: -100,
+        width: 300,
+        height: 300,
+        overflow: 'hidden',
+        zIndex: 0,
+    },
+    circle: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 200,
+        opacity: 0.4,
+    },
+});
 
 export default MessagesList;
