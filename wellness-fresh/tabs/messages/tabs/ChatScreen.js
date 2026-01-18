@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Modal, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const ChatScreen = ({ chatData, onBack }) => {
@@ -24,6 +24,9 @@ const ChatScreen = ({ chatData, onBack }) => {
         }
     ]);
     const [inputText, setInputText] = useState('');
+    const [isRevealed, setIsRevealed] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalType, setModalType] = useState(''); // 'reveal', 'hide', or 'success'
 
     const handleSend = () => {
         if (inputText.trim()) {
@@ -39,22 +42,121 @@ const ChatScreen = ({ chatData, onBack }) => {
     };
 
     const handleRevealName = () => {
-        Alert.alert(
-            'Reveal Your Name',
-            `Do you want to reveal your real name to ${chatData.name}? They will be able to see your identity.`,
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel'
-                },
-                {
-                    text: 'Reveal',
-                    onPress: () => {
-                        Alert.alert('Success', 'Your name has been revealed!');
-                    }
-                }
-            ]
-        );
+        if (isRevealed) {
+            setModalType('hide');
+            setShowModal(true);
+        } else {
+            setModalType('reveal');
+            setShowModal(true);
+        }
+    };
+
+    const handleConfirm = () => {
+        setShowModal(false);
+        if (modalType === 'reveal') {
+            setIsRevealed(true);
+            setTimeout(() => {
+                setModalType('success');
+                setShowModal(true);
+            }, 300);
+        } else if (modalType === 'hide') {
+            setIsRevealed(false);
+            setTimeout(() => {
+                setModalType('success');
+                setShowModal(true);
+            }, 300);
+        }
+    };
+
+    const handleCancel = () => {
+        setShowModal(false);
+    };
+
+    const getModalContent = () => {
+        switch (modalType) {
+            case 'reveal':
+                return {
+                    title: 'Reveal Your Name',
+                    message: `Do you want to reveal your real name to ${chatData.name}? They will be able to see your identity.`,
+                    showButtons: true
+                };
+            case 'hide':
+                return {
+                    title: 'Hide Your Name',
+                    message: `Do you want to hide your real name from ${chatData.name}? You will return to anonymous mode.`,
+                    showButtons: true
+                };
+            case 'success':
+                return {
+                    title: 'Success',
+                    message: isRevealed ? 'Your name has been revealed!' : 'You are now anonymous again!',
+                    showButtons: false
+                };
+            default:
+                return { title: '', message: '', showButtons: false };
+        }
+    };
+
+    const modalContent = getModalContent();
+
+    const renderHeaderAvatar = () => {
+        if (chatData.isGroup) {
+            return (
+                <View style={{ width: 40, height: 40, marginRight: 12, position: 'relative' }}>
+                    <Image
+                        source={chatData.groupImages[2]}
+                        style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            position: 'absolute',
+                            top: 6,
+                            left: 12,
+                            borderWidth: 1,
+                            borderColor: '#FFFFFF'
+                        }}
+                    />
+                    <Image
+                        source={chatData.groupImages[1]}
+                        style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            position: 'absolute',
+                            top: 3,
+                            left: 6,
+                            borderWidth: 1,
+                            borderColor: '#FFFFFF'
+                        }}
+                    />
+                    <Image
+                        source={chatData.groupImages[0]}
+                        style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            borderWidth: 1,
+                            borderColor: '#FFFFFF'
+                        }}
+                    />
+                </View>
+            );
+        } else {
+            return (
+                <Image
+                    source={chatData.image}
+                    style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        marginRight: 12
+                    }}
+                />
+            );
+        }
     };
 
     return (
@@ -75,25 +177,27 @@ const ChatScreen = ({ chatData, onBack }) => {
                 <TouchableOpacity onPress={onBack} style={{ marginRight: 12 }}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <View style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    backgroundColor: chatData.color || '#CABDFD',
-                    marginRight: 12
-                }} />
+                
+                {renderHeaderAvatar()}
+
                 <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 18, fontWeight: '600' }}>{chatData.name}</Text>
                     <Text style={{ fontSize: 12, color: '#9CA3AF' }}>Active Now</Text>
                 </View>
                 <TouchableOpacity onPress={handleRevealName}>
-                    <Ionicons name="information-circle-outline" size={24} color="#000" />
+                    <Ionicons 
+                        name={isRevealed ? "eye" : "eye-off"} 
+                        size={24} 
+                        color="#000" 
+                    />
                 </TouchableOpacity>
             </View>
 
             <View style={{ padding: 20, alignItems: 'center', backgroundColor: '#FFFFFF' }}>
                 <Text style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center' }}>
-                    You're chatting anonymously. You can{'\n'}reveal your name anytime.
+                    {isRevealed 
+                        ? `${chatData.name} can see your real name` 
+                        : "You're chatting anonymously. You can\nreveal your name anytime."}
                 </Text>
             </View>
 
@@ -167,6 +271,118 @@ const ChatScreen = ({ chatData, onBack }) => {
                     <Ionicons name="send" size={20} color="#FFFFFF" />
                 </TouchableOpacity>
             </View>
+
+            {/* Custom Modal */}
+            <Modal
+                transparent={true}
+                visible={showModal}
+                animationType="fade"
+                onRequestClose={handleCancel}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <View style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: 20,
+                        padding: 24,
+                        width: '85%',
+                        maxWidth: 340,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
+                        elevation: 5
+                    }}>
+                        <Text style={{
+                            fontSize: 20,
+                            fontWeight: '600',
+                            marginBottom: 12,
+                            textAlign: 'center',
+                            color: '#000000'
+                        }}>
+                            {modalContent.title}
+                        </Text>
+                        <Text style={{
+                            fontSize: 14,
+                            color: '#6B7280',
+                            textAlign: 'center',
+                            marginBottom: 24,
+                            lineHeight: 20
+                        }}>
+                            {modalContent.message}
+                        </Text>
+
+                        {modalContent.showButtons ? (
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <TouchableOpacity
+                                    onPress={handleCancel}
+                                    style={{
+                                        flex: 1,
+                                        paddingVertical: 12,
+                                        paddingHorizontal: 20,
+                                        borderRadius: 12,
+                                        backgroundColor: '#F3F4F6',
+                                        marginRight: 8
+                                    }}
+                                >
+                                    <Text style={{
+                                        color: '#6B7280',
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        textAlign: 'center'
+                                    }}>
+                                        Cancel
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handleConfirm}
+                                    style={{
+                                        flex: 1,
+                                        paddingVertical: 12,
+                                        paddingHorizontal: 20,
+                                        borderRadius: 12,
+                                        backgroundColor: '#CABDFD',
+                                        marginLeft: 8
+                                    }}
+                                >
+                                    <Text style={{
+                                        color: '#FFFFFF',
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        textAlign: 'center'
+                                    }}>
+                                        {modalType === 'reveal' ? 'Reveal' : 'Hide'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <TouchableOpacity
+                                onPress={handleCancel}
+                                style={{
+                                    paddingVertical: 12,
+                                    paddingHorizontal: 20,
+                                    borderRadius: 12,
+                                    backgroundColor: '#CABDFD'
+                                }}
+                            >
+                                <Text style={{
+                                    color: '#FFFFFF',
+                                    fontSize: 16,
+                                    fontWeight: '600',
+                                    textAlign: 'center'
+                                }}>
+                                    OK
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                </View>
+            </Modal>
         </KeyboardAvoidingView>
     );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const MessagesList = ({ onSelectChat }) => {
@@ -13,7 +13,9 @@ const MessagesList = ({ onSelectChat }) => {
             message: 'Hey! Are you coming to Mindful bites...',
             time: '2m ago',
             unread: true,
-            color: '#CABDFD'
+            color: '#CABDFD',
+            image: require('../../../assets/images/MessageCat.png'),
+            isGroup: false
         },
         {
             id: 2,
@@ -21,7 +23,9 @@ const MessagesList = ({ onSelectChat }) => {
             message: 'Thanks for the encouragement during...',
             time: '1h ago',
             unread: true,
-            color: '#DBEAFE'
+            color: '#DBEAFE',
+            image: require('../../../assets/images/MessageBunny.png'),
+            isGroup: false
         },
         {
             id: 3,
@@ -29,7 +33,13 @@ const MessagesList = ({ onSelectChat }) => {
             message: "Hey everyone! I'm here a bit early, we're...",
             time: 'Yesterday',
             unread: false,
-            color: '#CABDFD'
+            color: '#CABDFD',
+            isGroup: true,
+            groupImages: [
+                require('../../../assets/images/MessageDog.png'),
+                require('../../../assets/images/MessageCat.png'),
+                require('../../../assets/images/MessageBunny.png')
+            ]
         }
     ];
 
@@ -37,6 +47,66 @@ const MessagesList = ({ onSelectChat }) => {
         msg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         msg.message.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const renderAvatar = (msg) => {
+        if (msg.isGroup) {
+            return (
+                <View style={{ width: 56, height: 56, marginRight: 12, position: 'relative' }}>
+                    <Image
+                        source={msg.groupImages[2]}
+                        style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            position: 'absolute',
+                            top: 8,
+                            left: 16,
+                            borderWidth: 2,
+                            borderColor: '#FFFFFF'
+                        }}
+                    />
+                    <Image
+                        source={msg.groupImages[1]}
+                        style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            position: 'absolute',
+                            top: 4,
+                            left: 8,
+                            borderWidth: 2,
+                            borderColor: '#FFFFFF'
+                        }}
+                    />
+                    <Image
+                        source={msg.groupImages[0]}
+                        style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            borderWidth: 2,
+                            borderColor: '#FFFFFF'
+                        }}
+                    />
+                </View>
+            );
+        } else {
+            return (
+                <Image
+                    source={msg.image}
+                    style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 28,
+                        marginRight: 12
+                    }}
+                />
+            );
+        }
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
@@ -78,13 +148,7 @@ const MessagesList = ({ onSelectChat }) => {
                             borderBottomColor: '#F3F4F6'
                         }}
                     >
-                        <View style={{
-                            width: 56,
-                            height: 56,
-                            borderRadius: 28,
-                            backgroundColor: msg.color,
-                            marginRight: 12
-                        }} />
+                        {renderAvatar(msg)}
 
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
