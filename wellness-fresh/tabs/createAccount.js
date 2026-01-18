@@ -1,26 +1,17 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, ScrollView, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, ScrollView, SafeAreaView, Image } from 'react-native';
 
 // Username generation data
 const adjectives = ['happy', 'gentle', 'wise', 'calm', 'brave', 'kind', 'sweet', 'silly', 'curious', 'jolly', 'peaceful', 'cheerful', 'friendly', 'clever', 'cozy', 'bright', 'sunny', 'quiet', 'warm', 'cool', 'swift', 'tiny', 'mighty', 'noble', 'pure', 'soft', 'neat', 'proud', 'lucky', 'sleepy', 'bouncy', 'fuzzy', 'snuggly', 'playful', 'graceful', 'patient', 'creative', 'dreamy', 'gentle', 'honest', 'humble', 'joyful', 'lively', 'merry', 'serene', 'tender', 'vivid', 'witty', 'zesty'];
 
-const animals = ['elephant', 'panda', 'otter', 'cat', 'dog', 'bunny', 'fox', 'bear', 'koala', 'penguin', 'owl', 'deer', 'hedgehog', 'raccoon', 'squirrel', 'turtle', 'dolphin', 'seal', 'hamster', 'mouse', 'bird', 'butterfly', 'ladybug', 'bee', 'frog', 'duck', 'swan', 'peacock', 'parrot', 'whale'];
+const animals = ['otter', 'cat', 'dog', 'bunny'];
 
-const fruits = ['strawberry', 'mango', 'peach', 'cherry', 'kiwi', 'plum', 'grape', 'orange', 'lemon', 'melon', 'apple', 'pear', 'berry', 'coconut', 'papaya', 'guava', 'fig', 'date', 'lime', 'banana'];
-
-const allNouns = [...animals, ...fruits];
-
-const animalEmojis = {
-    elephant: '🐘', panda: '🐼', otter: '🦦', cat: '🐱', dog: '🐶', bunny: '🐰',
-    fox: '🦊', bear: '🐻', koala: '🐨', penguin: '🐧', owl: '🦉', deer: '🦌',
-    hedgehog: '🦔', raccoon: '🦝', squirrel: '🐿️', turtle: '🐢', dolphin: '🐬',
-    seal: '🦭', hamster: '🐹', mouse: '🐭', bird: '🐦', butterfly: '🦋',
-    ladybug: '🐞', bee: '🐝', frog: '🐸', duck: '🦆', swan: '🦢', peacock: '🦚',
-    parrot: '🦜', whale: '🐋', strawberry: '🍓', mango: '🥭', peach: '🍑',
-    cherry: '🍒', kiwi: '🥝', plum: '🍑', grape: '🍇', orange: '🍊',
-    lemon: '🍋', melon: '🍉', apple: '🍎', pear: '🍐', berry: '🫐',
-    coconut: '🥥', papaya: '🍈', guava: '🍈', fig: '🍇', date: '🫒',
-    lime: '🍋', banana: '🍌'
+// Map animal names to their PNG images
+const animalImages = {
+    otter: require('../assets/images/OtterWelcome.png'),
+    cat: require('../assets/images/MessageCat.png'),
+    dog: require('../assets/images/MessageDog.png'),
+    bunny: require('../assets/images/MessageBunny.png'),
 };
 
 const interestOptions = [
@@ -34,8 +25,8 @@ const interestOptions = [
 const generateUsername = () => {
     const adj1 = adjectives[Math.floor(Math.random() * adjectives.length)];
     const adj2 = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = allNouns[Math.floor(Math.random() * allNouns.length)];
-    return `${adj1}${adj2}${noun}`;
+    const animal = animals[Math.floor(Math.random() * animals.length)];
+    return `${adj1}-${adj2}-${animal}`;
 };
 
 // Account Creation Step 1: Name & Pronouns
@@ -43,11 +34,27 @@ export function AccountStep1({ onNavigate, userData, onUpdateUserData }) {
     const [firstName, setFirstName] = useState(userData.firstName);
     const [lastName, setLastName] = useState(userData.lastName);
     const [pronouns, setPronouns] = useState(userData.pronouns);
+    const [customPronouns, setCustomPronouns] = useState('');
+    const [showOtherInput, setShowOtherInput] = useState(false);
+
+    const handlePronounSelect = (pronoun) => {
+        if (pronoun === 'other') {
+            setShowOtherInput(true);
+            setPronouns('');
+        } else {
+            setShowOtherInput(false);
+            setPronouns(pronoun);
+            setCustomPronouns('');
+        }
+    };
 
     const handleNext = () => {
-        onUpdateUserData({ firstName, lastName, pronouns });
+        const finalPronouns = showOtherInput ? customPronouns : pronouns;
+        onUpdateUserData({ firstName, lastName, pronouns: finalPronouns });
         onNavigate('account-step2');
     };
+
+    const isFormValid = firstName && lastName && (pronouns || (showOtherInput && customPronouns.trim()));
 
     return (
         <SafeAreaView style={styles.whiteContainer}>
@@ -87,20 +94,37 @@ export function AccountStep1({ onNavigate, userData, onUpdateUserData }) {
                     {['he/him', 'she/her', 'they/them', 'other'].map((pronoun) => (
                         <TouchableOpacity
                             key={pronoun}
-                            style={[styles.pronounChip, pronouns === pronoun && styles.pronounChipSelected]}
-                            onPress={() => setPronouns(pronoun)}
+                            style={[
+                                styles.pronounChip, 
+                                (pronouns === pronoun || (pronoun === 'other' && showOtherInput)) && styles.pronounChipSelected
+                            ]}
+                            onPress={() => handlePronounSelect(pronoun)}
                         >
-                            <Text style={[styles.pronounText, pronouns === pronoun && styles.pronounTextSelected]}>
+                            <Text style={[
+                                styles.pronounText, 
+                                (pronouns === pronoun || (pronoun === 'other' && showOtherInput)) && styles.pronounTextSelected
+                            ]}>
                                 {pronoun}
                             </Text>
                         </TouchableOpacity>
                     ))}
                 </View>
 
+                {/* Custom Pronouns Input - shows when "other" is selected */}
+                {showOtherInput && (
+                    <TextInput
+                        style={[styles.input, styles.customPronounsInput]}
+                        value={customPronouns}
+                        onChangeText={setCustomPronouns}
+                        placeholder="Enter your pronouns (e.g., ze/zir, xe/xem)"
+                        autoFocus
+                    />
+                )}
+
                 <TouchableOpacity
-                    style={[styles.nextButton, (!firstName || !lastName || !pronouns) && styles.nextButtonDisabled]}
+                    style={[styles.nextButton, !isFormValid && styles.nextButtonDisabled]}
                     onPress={handleNext}
-                    disabled={!firstName || !lastName || !pronouns}
+                    disabled={!isFormValid}
                 >
                     <Text style={styles.nextButtonText}>Next →</Text>
                 </TouchableOpacity>
@@ -114,14 +138,18 @@ export function AccountStep2({ onNavigate, userData, onUpdateUserData }) {
     const [username, setUsername] = useState(userData.username || generateUsername());
 
     const handleNext = () => {
-        const animal = allNouns.find(noun => username.includes(noun));
+        // Extract the animal from the username
+        const animal = animals.find(a => username.includes(a)) || 'otter';
         onUpdateUserData({
             username,
-            animal: animal || 'otter',
-            pfp: animalEmojis[animal] || '🦦'
+            animal: animal,
+            pfp: animalImages[animal]
         });
         onNavigate('account-step3');
     };
+
+    // Get current animal for preview
+    const currentAnimal = animals.find(a => username.includes(a)) || 'otter';
 
     return (
         <SafeAreaView style={styles.whiteContainer}>
@@ -141,6 +169,11 @@ export function AccountStep2({ onNavigate, userData, onUpdateUserData }) {
                 <Text style={styles.stepSubtitle}>We've generated a fun username for you!</Text>
 
                 <View style={styles.usernameDisplay}>
+                    <Image 
+                        source={animalImages[currentAnimal]}
+                        style={styles.usernamePreviewImage}
+                        resizeMode="contain"
+                    />
                     <Text style={styles.usernameText}>{username}</Text>
                 </View>
 
@@ -186,7 +219,11 @@ export function AccountStep3({ onNavigate, userData }) {
                 <Text style={styles.stepSubtitle}>Based on your username: {userData.username}</Text>
 
                 <View style={styles.pfpDisplay}>
-                    <Text style={styles.pfpEmoji}>{userData.pfp}</Text>
+                    <Image 
+                        source={userData.pfp}
+                        style={styles.pfpImage}
+                        resizeMode="contain"
+                    />
                 </View>
 
                 <Text style={styles.pfpAnimalName}>{userData.animal}</Text>
@@ -344,6 +381,9 @@ const styles = StyleSheet.create({
         color: '#7C3AED',
         fontWeight: '600',
     },
+    customPronounsInput: {
+        marginTop: 12,
+    },
     nextButton: {
         backgroundColor: '#D1C5FD',
         padding: 18,
@@ -366,8 +406,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginVertical: 30,
     },
+    usernamePreviewImage: {
+        width: 80,
+        height: 80,
+        marginBottom: 15,
+    },
     usernameText: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: '700',
         color: '#7C3AED',
     },
@@ -389,8 +434,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginVertical: 40,
     },
-    pfpEmoji: {
-        fontSize: 120,
+    pfpImage: {
+        width: 200,
+        height: 200,
     },
     pfpAnimalName: {
         fontSize: 24,
