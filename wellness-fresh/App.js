@@ -1,3 +1,4 @@
+import HomePage from './tabs/homepage';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
 
@@ -6,7 +7,7 @@ import WelcomePage from './tabs/welcome';
 import { SignInPage, CWLAuthPage } from './tabs/signIn';
 import { AccountStep1, AccountStep2, AccountStep3, AccountStep4 } from './tabs/createAccount';
 
-export default function App() {,
+export default function App() {
     const [currentPage, setCurrentPage] = useState('welcome');
     const [userData, setUserData] = useState({
         firstName: '',
@@ -25,25 +26,6 @@ export default function App() {,
     const handleUpdateUserData = (newData) => {
         setUserData({ ...userData, ...newData });
     };
-
-    // Home Page (Placeholder)
-    const HomePage = () => (
-        <SafeAreaView style={styles.whiteContainer}>
-            <StatusBar barStyle="dark-content" />
-            <View style={styles.homeContainer}>
-                <Text style={styles.homeTitle}>Welcome, {userData.username}! {userData.pfp}</Text>
-                <Text style={styles.homeSubtitle}>Your account has been created</Text>
-
-                <View style={styles.profileSummary}>
-                    <Text style={styles.summaryText}>Name: {userData.firstName} {userData.lastName}</Text>
-                    <Text style={styles.summaryText}>Pronouns: {userData.pronouns}</Text>
-                    <Text style={styles.summaryText}>Interests: {userData.interests.join(', ')}</Text>
-                </View>
-
-                <Text style={styles.homeNote}>Home/Events page coming next! 🎉</Text>
-            </View>
-        </SafeAreaView>
-    );
 
     // Render current page
     const renderPage = () => {
