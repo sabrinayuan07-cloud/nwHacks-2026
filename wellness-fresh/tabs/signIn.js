@@ -84,7 +84,7 @@ export function CWLAuthPage({ onNavigate }) {
                         <Text style={styles.ubcLogoText}>UBC</Text>
                     </View>
                     <Text style={styles.cwlTitle}>CWL Authentication</Text>
-                    <Text style={styles.cwlSubtitle}>Login to continue to U-Pass BC Program at UBC</Text>
+                    <Text style={styles.cwlSubtitle}>Login to continue to your wellness community</Text>
                 </View>
 
                 <View style={styles.cwlForm}>

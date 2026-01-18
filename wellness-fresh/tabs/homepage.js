@@ -12,6 +12,7 @@ import {
     Keyboard
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import BottomNav from './bottomNav';
 
 export default function HomePage({ onNavigate }) {
@@ -155,6 +156,20 @@ export default function HomePage({ onNavigate }) {
                     </LinearGradient>
                 </TouchableOpacity>
             </ScrollView>
+
+            {/* Meditation Floating Button */}
+            <TouchableOpacity
+                style={styles.meditationButton}
+                onPress={() => onNavigate('meditation')}
+                activeOpacity={0.8}
+            >
+                <LinearGradient
+                    colors={['#D1C5FD', '#BFDBFE']}
+                    style={styles.meditationButtonGradient}
+                >
+                    <Ionicons name="headset" size={24} color="#FFFFFF" />
+                </LinearGradient>
+            </TouchableOpacity>
 
             {/* Bottom Navigation - Fixed at bottom */}
             <View style={styles.bottomNavContainer}>
@@ -476,6 +491,26 @@ const styles = StyleSheet.create({
         lineHeight: 24,
     },
 
+    // Meditation Floating Button
+    meditationButton: {
+        position: 'absolute',
+        bottom: 100,
+        right: 20,
+        zIndex: 11,
+        shadowColor: '#7C3AED',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    meditationButtonGradient: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
     // Bottom Navigation Container
     bottomNavContainer: {
         position: 'absolute',
@@ -492,20 +527,20 @@ const styles = StyleSheet.create({
     communitySectionTitle: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#374151',
+        color: '#7C3AED',
         marginBottom: 15,
     },
     communityMessageCard: {
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#F5F3FF',
         borderRadius: 15,
         padding: 15,
         marginBottom: 10,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: '#DDD6FE',
     },
     communityMessageText: {
         fontSize: 14,
-        color: '#6B7280',
+        color: '#6D28D9',
         fontStyle: 'italic',
         lineHeight: 20,
     },

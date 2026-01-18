@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -6,7 +6,10 @@ import {
     ScrollView,
     TouchableOpacity,
     StatusBar,
-    Image
+    Image,
+    Modal,
+    TextInput,
+    Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import BottomNav from './bottomNav';
@@ -27,9 +30,36 @@ const upcomingEvents = [
     },
 ];
 
-export default function ProfilePage({ userData, onNavigate }) {
+export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) {
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editUsername, setEditUsername] = useState(userData?.username || '');
+    const [editPronouns, setEditPronouns] = useState(userData?.pronouns || '');
+
     const handleLogout = () => {
-        onNavigate('welcome');
+        Alert.alert(
+            'Log Out',
+            'Are you sure you want to log out?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Log Out', onPress: () => onNavigate('welcome'), style: 'destructive' }
+            ]
+        );
+    };
+
+    const handleEditProfile = () => {
+        setEditUsername(userData?.username || '');
+        setEditPronouns(userData?.pronouns || '');
+        setShowEditModal(true);
+    };
+
+    const handleSaveProfile = () => {
+        if (onUpdateUserData) {
+            onUpdateUserData({
+                username: editUsername,
+                pronouns: editPronouns
+            });
+        }
+        setShowEditModal(false);
     };
 
     return (
@@ -73,7 +103,14 @@ export default function ProfilePage({ userData, onNavigate }) {
                             )}
                         </LinearGradient>
                     </View>
-                    <Text style={styles.username}>{userData?.username || 'calm-otter'}</Text>
+                    <Text
+                        style={styles.username}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.6}
+                    >
+                        {userData?.username || 'calm-otter'}
+                    </Text>
                     <Text style={styles.pronouns}>{userData?.pronouns || 'they/them'}</Text>
                 </View>
 
@@ -120,7 +157,7 @@ export default function ProfilePage({ userData, onNavigate }) {
 
                 {/* Action Buttons */}
                 <View style={styles.buttonsSection}>
-                    <TouchableOpacity style={styles.editProfileButton}>
+                    <TouchableOpacity style={styles.editProfileButton} onPress={handleEditProfile}>
                         <LinearGradient
                             colors={['#D1C5FD', '#CABDFD', '#BFDBFE']}
                             start={{ x: 0, y: 0 }}
@@ -141,6 +178,54 @@ export default function ProfilePage({ userData, onNavigate }) {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+
+            {/* Edit Profile Modal */}
+            <Modal
+                visible={showEditModal}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setShowEditModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.editModalContent}>
+                        <View style={styles.editModalHeader}>
+                            <Text style={styles.editModalTitle}>Edit Profile</Text>
+                            <TouchableOpacity onPress={() => setShowEditModal(false)}>
+                                <Text style={styles.closeButton}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={styles.inputLabel}>Username</Text>
+                        <TextInput
+                            style={styles.editInput}
+                            value={editUsername}
+                            onChangeText={setEditUsername}
+                            placeholder="Enter username"
+                            placeholderTextColor="#9CA3AF"
+                        />
+
+                        <Text style={styles.inputLabel}>Pronouns</Text>
+                        <TextInput
+                            style={styles.editInput}
+                            value={editPronouns}
+                            onChangeText={setEditPronouns}
+                            placeholder="e.g., they/them, she/her, he/him"
+                            placeholderTextColor="#9CA3AF"
+                        />
+
+                        <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
+                            <LinearGradient
+                                colors={['#D1C5FD', '#BFDBFE']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.saveButtonGradient}
+                            >
+                                <Text style={styles.saveButtonText}>Save Changes</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
 
             {/* Fixed Bottom Navigation */}
             <View style={styles.bottomNavContainer}>
@@ -338,5 +423,65 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         zIndex: 10,
+    },
+
+    // Edit Profile Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    editModalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 25,
+        width: '100%',
+        padding: 24,
+    },
+    editModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    editModalTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#374151',
+    },
+    closeButton: {
+        fontSize: 28,
+        color: '#9CA3AF',
+        fontWeight: '300',
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: 8,
+        marginTop: 10,
+    },
+    editInput: {
+        backgroundColor: '#F9FAFB',
+        borderRadius: 15,
+        padding: 16,
+        fontSize: 16,
+        color: '#374151',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    saveButton: {
+        marginTop: 25,
+    },
+    saveButtonGradient: {
+        paddingVertical: 16,
+        borderRadius: 25,
+        alignItems: 'center',
+    },
+    saveButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

@@ -8,6 +8,7 @@ import HomePage from './tabs/homepage';
 import { EventsListPage } from './tabs/events';
 import Messages from './tabs/messages';
 import ProfilePage from './tabs/profile';
+import MeditationPage from './tabs/meditation';
 
 export default function App() {
     console.log('🚀 Using UPDATED App.js with Events navigation');
@@ -56,7 +57,9 @@ export default function App() {
             case 'messages':
                 return <Messages onNavigate={handleNavigate} />;
             case 'profile':
-                return <ProfilePage onNavigate={handleNavigate} userData={userData} />;
+                return <ProfilePage onNavigate={handleNavigate} userData={userData} onUpdateUserData={handleUpdateUserData} />;
+            case 'meditation':
+                return <MeditationPage onNavigate={handleNavigate} />;
             default:
                 return <WelcomePage onNavigate={handleNavigate} />;
         }
