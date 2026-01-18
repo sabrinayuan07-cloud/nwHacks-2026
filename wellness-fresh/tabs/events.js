@@ -796,11 +796,8 @@ const styles = StyleSheet.create({
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
-        shadowColor: '#D1C5FD',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
+        borderWidth: 0.7,
+        borderColor: '#000000',
     },
     joinButtonText: {
         color: '#FFFFFF',

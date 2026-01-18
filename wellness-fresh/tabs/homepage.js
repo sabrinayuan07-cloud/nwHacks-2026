@@ -480,8 +480,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 25,
         borderRadius: 35,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderWidth: 0.7,
+        borderColor: '#000000',
     },
     shareButtonText: {
         color: '#FFFFFF',

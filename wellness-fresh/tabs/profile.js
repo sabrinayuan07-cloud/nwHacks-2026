@@ -14,6 +14,16 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import BottomNav from './bottomNav';
 
+// Map animal names to their PNG images (same as createAccount.js)
+const animalImages = {
+    otter: require('../assets/images/OtterWelcome.png'),
+    cat: require('../assets/images/MessageCat.png'),
+    dog: require('../assets/images/MessageDog.png'),
+    bunny: require('../assets/images/MessageBunny.png'),
+};
+
+const animals = ['otter', 'cat', 'dog', 'bunny'];
+
 // Sample upcoming events data
 const upcomingEvents = [
     {
@@ -34,6 +44,27 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
     const [showEditModal, setShowEditModal] = useState(false);
     const [editUsername, setEditUsername] = useState(userData?.username || '');
     const [editPronouns, setEditPronouns] = useState(userData?.pronouns || '');
+
+    // Get the profile picture - check pfp first, then animal, then extract from username
+    const getProfilePicture = () => {
+        if (userData?.pfp) {
+            // pfp is already an image source
+            return userData.pfp;
+        }
+        // If animal is stored, use it
+        if (userData?.animal && animalImages[userData.animal]) {
+            return animalImages[userData.animal];
+        }
+        // Otherwise, extract animal from username as fallback
+        if (userData?.username) {
+            const animal = animals.find(a => userData.username.toLowerCase().includes(a));
+            if (animal && animalImages[animal]) {
+                return animalImages[animal];
+            }
+        }
+        // Default to otter
+        return animalImages.otter;
+    };
 
     const handleLogout = () => {
         Alert.alert(
@@ -92,15 +123,11 @@ export default function ProfilePage({ userData, onNavigate, onUpdateUserData }) 
                             colors={['#E9D5FF', '#D1C5FD']}
                             style={styles.avatarBackground}
                         >
-                            {userData?.pfp ? (
-                                <Text style={styles.avatarEmoji}>{userData.pfp}</Text>
-                            ) : (
-                                <Image
-                                    source={require('../assets/images/OtterWelcome.png')}
-                                    style={styles.avatarImage}
-                                    resizeMode="contain"
-                                />
-                            )}
+                            <Image
+                                source={getProfilePicture()}
+                                style={styles.avatarImage}
+                                resizeMode="contain"
+                            />
                         </LinearGradient>
                     </View>
                     <Text
@@ -296,9 +323,6 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
     },
-    avatarEmoji: {
-        fontSize: 80,
-    },
     username: {
         fontSize: 24,
         fontWeight: '700',
@@ -378,16 +402,13 @@ const styles = StyleSheet.create({
     editProfileButton: {
         width: '100%',
         marginBottom: 15,
-        shadowColor: '#D1C5FD',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
     },
     editProfileGradient: {
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
+        borderWidth: 0.7,
+        borderColor: '#000000',
     },
     editProfileText: {
         color: '#FFFFFF',
@@ -401,6 +422,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#F3E8FF',
         marginBottom: 15,
+        borderWidth: 0.7,
+        borderColor: '#000000',
     },
     privacyButtonText: {
         color: '#7C3AED',
@@ -409,6 +432,10 @@ const styles = StyleSheet.create({
     },
     logoutButton: {
         paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        borderWidth: 0.7,
+        borderColor: '#000000',
     },
     logoutText: {
         color: '#6B7280',

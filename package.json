@@ -1,0 +1,11 @@
+{
+  "name": "nwhacks-2026",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd wellness-fresh && expo start",
+    "android": "cd wellness-fresh && expo start --android",
+    "ios": "cd wellness-fresh && expo start --ios",
+    "web": "cd wellness-fresh && expo start --web"
+  }
+}
