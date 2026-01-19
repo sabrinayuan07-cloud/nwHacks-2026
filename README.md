@@ -23,4 +23,4 @@ The app lets you:
 
 ---
 
-Made with ♡ by Amy, Wakana & Sabrina
+Built with ♡ by Amy, Wakana & Sabrina
