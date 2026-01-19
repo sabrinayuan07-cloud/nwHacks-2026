@@ -19,8 +19,7 @@ The app lets you:
 ## Tech Stack
 
 - React Native with Expo (because we wanted it to work on both iOS and Android without too much hassle)
-- Expo Router for navigatio
-- Linear gradients for the aesthetic (we tried to make it look friendly and approachable)
+- Expo Router for navigation
 
 ---
 
